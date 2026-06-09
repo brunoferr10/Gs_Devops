@@ -36,52 +36,28 @@ A solução foi desenvolvida utilizando Java Spring Boot, PostgreSQL, Docker e D
 # Tecnologias Utilizadas
 
 ## Back-end
-
 - Java 17
 - Spring Boot 3
 - Spring Data JPA
 - Maven
 
 ## Banco de Dados
-
 - PostgreSQL 16
 
 ## Containers
-
 - Docker
 - Docker Compose
 
 ## Infraestrutura
-
 - Azure Virtual Machine Ubuntu Linux
 
 ---
 
 # Arquitetura Macro
 
-```text
-Usuário / Insomnia
-          │
-          ▼
-Azure Virtual Machine (Ubuntu)
-          │
-          ▼
-Docker Compose
- ┌─────────────────────────────┐
- │ app-orbitalalert-563489     │
- │ Spring Boot API             │
- └─────────────┬───────────────┘
-               │
-               ▼
- ┌─────────────────────────────┐
- │ db-orbitalalert-563489      │
- │ PostgreSQL 16              │
- └─────────────┬───────────────┘
-               │
-               ▼
-       Volume Nomeado
-postgres-orbitalalert-data
-```
+## Diagrama da Arquitetura
+
+![Arquitetura](Arquitetura.png)
 
 ---
 
@@ -129,9 +105,7 @@ Características:
 - Usuário não privilegiado (appuser)
 - Porta 8080 exposta
 - Variáveis de ambiente
-- Diretório de trabalho definido
-
----
+- Diretório de trabalho definido (/app)
 
 ## Container do Banco
 
@@ -147,6 +121,26 @@ Características:
 - Porta 5432 exposta
 - Volume nomeado
 - Variáveis de ambiente
+
+---
+
+# Recursos Docker Utilizados
+
+## Rede
+
+```text
+orbitalalert-network
+```
+
+Responsável pela comunicação entre os containers da aplicação e banco de dados.
+
+## Volume Nomeado
+
+```text
+postgres-orbitalalert-data
+```
+
+Responsável pela persistência dos dados do PostgreSQL mesmo após reinicialização ou recriação dos containers.
 
 ---
 
@@ -200,13 +194,13 @@ Responsável por:
 
 ```bash
 git clone https://github.com/brunoferr10/Gs_Devops.git
-cd orbital-alert
+cd Gs_Devops
 ```
 
 ## 2. Construir e Executar os Containers
 
 ```bash
-docker compose up -d --build
+docker-compose up -d --build
 ```
 
 ## 3. Verificar Containers
@@ -259,36 +253,57 @@ ls -l
 whoami
 ```
 
-## 9. Testar API
+## 9. Testar API em Nuvem
 
 ### GET
 
 ```http
-GET http://localhost:8080/regioes
+GET http://20.63.72.71:8080/regioes
 ```
 
 ### POST
 
 ```http
-POST http://localhost:8080/regioes
+POST http://20.63.72.71:8080/regioes
 ```
 
 ### PUT
 
 ```http
-PUT http://localhost:8080/sensores/1/regiao/1
+PUT http://20.63.72.71:8080/sensores/1/regiao/1
 ```
 
 ### DELETE
 
 ```http
-DELETE http://localhost:8080/sensores/1
+DELETE http://20.63.72.71:8080/sensores/1
 ```
 
 ## 10. Validar Persistência
 
 ```bash
 docker exec -it db-orbitalalert-563489 psql -U orbital -d orbitalalert
+```
+
+```sql
+SELECT * FROM regiao;
+SELECT * FROM sensor;
+```
+
+---
+
+# Evidências Solicitadas
+
+Durante a demonstração foram executados os seguintes comandos:
+
+```bash
+docker ps
+docker logs app-orbitalalert-563489
+docker logs db-orbitalalert-563489
+docker exec -it app-orbitalalert-563489 /bin/sh
+docker exec -it db-orbitalalert-563489 /bin/bash
+docker volume ls
+docker network ls
 ```
 
 ```sql
@@ -309,18 +324,21 @@ Operações demonstradas:
 - Update
 - Delete
 
-Validadas através de:
-
-```sql
-SELECT * FROM regiao;
-SELECT * FROM sensor;
-```
-
 ---
 
 # Execução em Nuvem
 
 A solução foi implantada em uma máquina virtual Ubuntu hospedada na Microsoft Azure.
+
+## Acesso Externo da API
+
+Após a implantação na Azure VM e liberação da porta 8080:
+
+```text
+http://20.63.72.71:8080/regioes
+```
+
+Os testes de CRUD apresentados no vídeo foram executados utilizando o IP público da máquina virtual, demonstrando a execução da solução em ambiente de nuvem.
 
 A infraestrutura contém:
 
