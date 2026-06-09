@@ -1,0 +1,36 @@
+services:
+  db-orbitalalert-563489:
+    image: postgres:16
+    container_name: db-orbitalalert-563489
+    environment:
+      POSTGRES_DB: orbitalalert
+      POSTGRES_USER: orbital
+      POSTGRES_PASSWORD: orbital123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-orbitalalert-data:/var/lib/postgresql/data
+    networks:
+      - orbitalalert-network
+
+  app-orbitalalert-563489:
+    build: .
+    container_name: app-orbitalalert-563489
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-orbitalalert-563489:5432/orbitalalert
+      SPRING_DATASOURCE_USERNAME: orbital
+      SPRING_DATASOURCE_PASSWORD: orbital123
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db-orbitalalert-563489
+    networks:
+      - orbitalalert-network
+
+volumes:
+  postgres-orbitalalert-data:
+
+networks:
+  orbitalalert-network:
+    driver: bridge
